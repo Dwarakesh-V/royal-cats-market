@@ -1,5 +1,6 @@
 import { McpApp, Module, ConfigModule } from '@nitrostack/core';
 import { OauthModule } from './modules/oauth/oauth.module.js';
+import { SocialModule } from './modules/social/social.module.js';
 import { SystemHealthCheck } from './health/system.health.js';
 
 /**
@@ -23,7 +24,8 @@ import { SystemHealthCheck } from './health/system.health.js';
   description: 'Root application module',
   imports: [
     ConfigModule.forRoot(),
-    OauthModule
+    OauthModule,
+    SocialModule
   ],
   providers: [
     // Health Checks
