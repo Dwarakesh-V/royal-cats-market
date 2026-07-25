@@ -31,15 +31,46 @@ async function bootstrap() {
         res.status(400).send('No code provided');
         return;
       }
+      const renderPage = (title: string, message: string) => `
+        <html>
+          <head>
+            <style>
+              body {
+                background-color: #C4BDB7;
+                color: #89715B;
+                font-family: 'Inter', sans-serif;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+                margin: 0;
+              }
+              h1 {
+                font-size: 3rem;
+                margin-bottom: 1rem;
+              }
+              p {
+                font-size: 1.2rem;
+              }
+            </style>
+          </head>
+          <body>
+            <h1>Royal Cats</h1>
+            <p>${message}</p>
+          </body>
+        </html>
+      `;
+
       try {
         if (globalOauthService) {
           await globalOauthService.handleCallback(code);
-          res.send('Successfully authenticated with Google Drive! You can close this window.');
+          res.send(renderPage('Success', 'Successfully authenticated with Google Drive! You can close this window.'));
         } else {
-          res.status(500).send('OAuth service not initialized');
+          res.status(500).send(renderPage('Error', 'OAuth service not initialized'));
         }
       } catch (error: any) {
-        res.status(500).send('Authentication failed: ' + error.message);
+        res.status(500).send(renderPage('Error', 'Authentication failed: ' + error.message));
       }
     });
   }

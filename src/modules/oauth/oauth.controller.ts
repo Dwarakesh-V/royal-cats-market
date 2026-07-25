@@ -44,7 +44,7 @@ export class OauthController {
 
   @Tool({
     name: 'read_file',
-    description: 'Retrieves the textual contents of a file from Google Drive. Automatically exports Google Docs/Sheets to readable text.',
+    description: 'Retrieves the contents of a file from Google Drive as a base64 encoded string. Google Docs/Sheets are exported to text/CSV before encoding.',
     inputSchema: z.object({
       file_id: z.string().describe('The exact ID of the file to read (obtained from list_files)')
     })

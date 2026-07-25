@@ -71,15 +71,15 @@ export class OauthService {
       const res = await drive.files.export({
         fileId: fileId,
         mimeType: exportMimeType
-      }, { responseType: 'text' });
-      content = res.data as string;
+      }, { responseType: 'arraybuffer' });
+      content = Buffer.from(res.data as ArrayBuffer).toString('base64');
     } else {
       // Standard file, get media
       const res = await drive.files.get({
         fileId: fileId,
         alt: 'media'
-      }, { responseType: 'text' });
-      content = res.data as string;
+      }, { responseType: 'arraybuffer' });
+      content = Buffer.from(res.data as ArrayBuffer).toString('base64');
     }
 
     return {
