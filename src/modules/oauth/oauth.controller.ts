@@ -1,6 +1,7 @@
-import { ControllerDecorator as Controller, ToolDecorator as Tool, ExecutionContext, z } from '@nitrostack/core';
-import { OauthService } from './oauth.service.js';
+import { ControllerDecorator as Controller, ToolDecorator as Tool, ExecutionContext, z, Injectable } from '@nitrostack/core';
+import { OauthService, globalOauthService } from './oauth.service.js';
 
+@Injectable()
 @Controller('google_drive')
 export class OauthController {
   constructor(private readonly oauthService: OauthService) {}
@@ -11,7 +12,10 @@ export class OauthController {
     inputSchema: z.object({})
   })
   async generateAuthUrl(input: any, ctx: ExecutionContext) {
-    const url = this.oauthService.generateAuthUrl();
+    if (!globalOauthService) {
+      throw new Error('OAuth service is not initialized');
+    }
+    const url = globalOauthService.generateAuthUrl();
     return { 
       message: 'Please visit the following URL to authorize the application:',
       url 
@@ -25,7 +29,10 @@ export class OauthController {
   })
   async listFiles(input: any, ctx: ExecutionContext) {
     try {
-      const files = await this.oauthService.listDriveFiles();
+      if (!globalOauthService) {
+        throw new Error('OAuth service is not initialized');
+      }
+      const files = await globalOauthService.listDriveFiles();
       return { files };
     } catch (error: any) {
       ctx.logger.error('Failed to list files: ' + error.message);

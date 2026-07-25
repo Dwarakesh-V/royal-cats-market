@@ -11,6 +11,7 @@ src/widgets/out/
 .env
 .env.local
 .env.*.local
+.tokens.json
 
 # IDE
 .idea/

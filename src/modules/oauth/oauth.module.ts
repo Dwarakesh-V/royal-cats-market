@@ -4,7 +4,9 @@ import { OauthController } from './oauth.controller.js';
 
 @Module({
   name: 'oauth',
-  providers: [OauthService, OauthController],
+  description: 'Google Drive OAuth integration',
+  controllers: [OauthController],
+  providers: [OauthService],
   exports: [OauthService]
 })
 export class OauthModule {}

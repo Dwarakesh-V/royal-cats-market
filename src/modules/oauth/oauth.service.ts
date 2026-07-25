@@ -1,24 +1,27 @@
-import { Injectable, ConfigService } from '@nitrostack/core';
+import 'dotenv/config';
+import { Injectable } from '@nitrostack/core';
 import { google } from 'googleapis';
+import * as fs from 'fs';
+import * as path from 'path';
 
-export let globalOauthService: OauthService | null = null;
+const TOKEN_FILE_PATH = path.join(process.cwd(), '.tokens.json');
 
 @Injectable()
 export class OauthService {
   private oauth2Client;
   
-  constructor(private configService: ConfigService) {
-    const clientId = this.configService.get('GOOGLE_CLIENT_ID') || 'placeholder_client_id';
-    const clientSecret = this.configService.get('GOOGLE_CLIENT_SECRET') || 'placeholder_client_secret';
-    const redirectUri = this.configService.get('GOOGLE_REDIRECT_URI') || 'https://royal-cats-market-6a64a-royal-cats-amrita-university-coimbatore.app.nitrocloud.ai/auth/callback';
+  constructor() {
+    const clientId = (process.env.GOOGLE_OAUTH_CLIENT_ID || process.env.GOOGLE_CLIENT_ID || 'placeholder_client_id').trim();
+    const clientSecret = (process.env.GOOGLE_OAUTH_CLIENT_SECRET || process.env.GOOGLE_CLIENT_SECRET || 'placeholder_client_secret').trim();
+    const redirectUri = (process.env.GOOGLE_OAUTH_REDIRECT_URI || process.env.GOOGLE_REDIRECT_URI || 'http://localhost:3000/auth/callback').trim();
 
     this.oauth2Client = new google.auth.OAuth2(
       clientId,
       clientSecret,
       redirectUri
     );
-    
-    globalOauthService = this;
+
+    this.loadStoredTokens();
   }
 
   generateAuthUrl(): string {
@@ -37,9 +40,28 @@ export class OauthService {
   async handleCallback(code: string): Promise<void> {
     const { tokens } = await this.oauth2Client.getToken(code);
     this.oauth2Client.setCredentials(tokens);
-    // Note: In a production scenario, these tokens should be saved to a database.
-    // For this implementation, we will keep them in memory for the MCP server lifecycle.
+    try {
+      fs.writeFileSync(TOKEN_FILE_PATH, JSON.stringify(tokens, null, 2));
+      console.log('Successfully saved OAuth tokens to .tokens.json');
+    } catch (e: any) {
+      console.error('Failed to save tokens to file:', e.message);
+    }
     console.log('Successfully authenticated with Google Drive and stored tokens.');
+    console.log('Tokens received:', Object.keys(tokens));
+    console.log('Credentials after set:', Object.keys(this.oauth2Client.credentials));
+  }
+
+  private loadStoredTokens(): void {
+    try {
+      if (fs.existsSync(TOKEN_FILE_PATH)) {
+        const data = fs.readFileSync(TOKEN_FILE_PATH, 'utf-8');
+        const tokens = JSON.parse(data);
+        this.oauth2Client.setCredentials(tokens);
+        console.log('Loaded stored Google OAuth tokens from .tokens.json');
+      }
+    } catch (e: any) {
+      console.error('Failed to load stored tokens:', e.message);
+    }
   }
 
   getDriveClient() {
@@ -47,6 +69,8 @@ export class OauthService {
   }
 
   async listDriveFiles() {
+    this.loadStoredTokens();
+    console.log('listDriveFiles called. Credentials present:', Object.keys(this.oauth2Client.credentials));
     const drive = this.getDriveClient();
     const res = await drive.files.list({
       pageSize: 10,
@@ -55,3 +79,5 @@ export class OauthService {
     return res.data.files || [];
   }
 }
+
+export const globalOauthService = new OauthService();
