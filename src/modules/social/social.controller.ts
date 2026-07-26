@@ -16,7 +16,7 @@ export class SocialController {
   })
   async facebookPost(input: any, ctx: ExecutionContext) {
     try {
-      const result = await globalSocialService.postToFacebook(input.message, input.link);
+      const result = await this.socialService.postToFacebook(input.message, input.link);
       return { success: true, result };
     } catch (error: any) {
       ctx.logger.error('Facebook post failed: ' + error.message);
@@ -31,7 +31,7 @@ export class SocialController {
   })
   async facebookAnalytics(input: any, ctx: ExecutionContext) {
     try {
-      const result = await globalSocialService.getFacebookAnalytics();
+      const result = await this.socialService.getFacebookAnalytics();
       return { success: true, data: result };
     } catch (error: any) {
       ctx.logger.error('Facebook analytics failed: ' + error.message);
@@ -49,7 +49,7 @@ export class SocialController {
   })
   async instagramPost(input: any, ctx: ExecutionContext) {
     try {
-      const result = await globalSocialService.postToInstagram(input.image_url, input.caption);
+      const result = await this.socialService.postToInstagram(input.image_url, input.caption);
       return { success: true, result };
     } catch (error: any) {
       ctx.logger.error('Instagram post failed: ' + error.message);
@@ -64,7 +64,7 @@ export class SocialController {
   })
   async instagramAnalytics(input: any, ctx: ExecutionContext) {
     try {
-      const result = await globalSocialService.getInstagramAnalytics();
+      const result = await this.socialService.getInstagramAnalytics();
       return { success: true, data: result };
     } catch (error: any) {
       ctx.logger.error('Instagram analytics failed: ' + error.message);
@@ -81,7 +81,7 @@ export class SocialController {
   })
   async linkedinPost(input: any, ctx: ExecutionContext) {
     try {
-      const result = await globalSocialService.postToLinkedIn(input.text);
+      const result = await this.socialService.postToLinkedIn(input.text);
       return { success: true, result };
     } catch (error: any) {
       ctx.logger.error('LinkedIn post failed: ' + error.message);
@@ -96,7 +96,7 @@ export class SocialController {
   })
   async linkedinAnalytics(input: any, ctx: ExecutionContext) {
     try {
-      const result = await globalSocialService.getLinkedInAnalytics();
+      const result = await this.socialService.getLinkedInAnalytics();
       return { success: true, data: result };
     } catch (error: any) {
       ctx.logger.error('LinkedIn analytics failed: ' + error.message);
