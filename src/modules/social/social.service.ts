@@ -27,7 +27,7 @@ export class SocialService {
       if (data.id) {
         const statsUrl = `https://graph.facebook.com/v21.0/${data.id}?fields=id,message,likes.summary(true),comments.summary(true),shares,insights.metric(post_impressions,post_engagements)&access_token=${this.fbPageAccessToken}`;
         const statsRes = await fetch(statsUrl);
-        const statsData = await statsRes.json();
+        const statsData: any = await statsRes.json();
         postAnalytics = statsData.error ? { fallback: true, error: statsData.error.message } : statsData;
       }
     } catch (e: any) {
@@ -99,7 +99,7 @@ export class SocialService {
       if (publishData.id) {
         const statsUrl = `https://graph.facebook.com/v21.0/${publishData.id}/insights?metric=reach,saved,likes,comments,shares,total_interactions&access_token=${this.fbPageAccessToken}`;
         const statsRes = await fetch(statsUrl);
-        const statsData = await statsRes.json();
+        const statsData: any = await statsRes.json();
         postAnalytics = statsData.error ? { fallback: true, error: statsData.error.message } : statsData;
       }
     } catch (e: any) {
@@ -160,7 +160,7 @@ export class SocialService {
                'X-Restli-Protocol-Version': '2.0.0' 
              }
            });
-           const statsData = await statsRes.json();
+           const statsData: any = await statsRes.json();
            postAnalytics = statsData.error || statsData.status >= 400 ? { fallback: true, error: statsData.message || 'API Error' } : statsData;
          } catch (e: any) {
            postAnalytics = { fallback: true, error: e.message };
