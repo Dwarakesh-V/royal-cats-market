@@ -20,8 +20,6 @@ import { globalOauthService } from './modules/oauth/oauth.service.js';
 async function bootstrap() {
   // Create and start the MCP server
   const server = await McpApplicationFactory.create(AppModule);
-  await server.start();
-
   const httpTransport = server.getHttpTransport();
   if (httpTransport && httpTransport.getApp) {
     const app = httpTransport.getApp();
@@ -83,6 +81,9 @@ async function bootstrap() {
       }
     });
   }
+
+  // Start the server after configuring all routes
+  await server.start();
 }
 
 // Start the application
