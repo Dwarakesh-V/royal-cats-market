@@ -25,14 +25,37 @@ export class SocialService {
   }
 
   async getFacebookAnalytics() {
-    const url = new URL(`${this.fbBaseUrl}/${this.fbPageId}/insights`);
-    url.searchParams.append('metric', 'page_impressions,page_engaged_users');
-    url.searchParams.append('access_token', this.fbPageAccessToken);
+    // 1. Fetch basic robust page analytics
+    const pageUrl = new URL(`${this.fbBaseUrl}/${this.fbPageId}`);
+    pageUrl.searchParams.append('fields', 'followers_count,fan_count,new_like_count,rating_count,talking_about_count');
+    pageUrl.searchParams.append('access_token', this.fbPageAccessToken);
 
-    const res = await fetch(url.toString());
-    const data: any = await res.json();
-    if (!res.ok) throw new Error(`Facebook analytics failed: ${JSON.stringify(data)}`);
-    return data;
+    const pageRes = await fetch(pageUrl.toString());
+    const pageData: any = await pageRes.json();
+    if (!pageRes.ok) throw new Error(`Facebook page analytics failed: ${JSON.stringify(pageData)}`);
+
+    // 2. Fetch per-post analytics (recent 5 posts)
+    const postsUrl = new URL(`${this.fbBaseUrl}/${this.fbPageId}/published_posts`);
+    postsUrl.searchParams.append('fields', 'id,message,created_time,likes.summary(true),comments.summary(true),shares');
+    postsUrl.searchParams.append('limit', '5');
+    postsUrl.searchParams.append('access_token', this.fbPageAccessToken);
+
+    const postsRes = await fetch(postsUrl.toString());
+    const postsData: any = await postsRes.json();
+    
+    const recentPosts = (postsData.data || []).map((post: any) => ({
+      id: post.id,
+      message: post.message ? post.message.substring(0, 50) + '...' : '',
+      created_time: post.created_time,
+      likes: post.likes?.summary?.total_count || 0,
+      comments: post.comments?.summary?.total_count || 0,
+      shares: post.shares?.count || 0
+    }));
+
+    return {
+      page_metrics: pageData,
+      recent_posts_metrics: recentPosts
+    };
   }
 
   // Instagram
@@ -123,3 +146,6 @@ export class SocialService {
     return data;
   }
 }
+
+export const globalSocialService = new SocialService();
+

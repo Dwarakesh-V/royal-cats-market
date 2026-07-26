@@ -1,5 +1,5 @@
 import { ControllerDecorator as Controller, ToolDecorator as Tool, ExecutionContext, z, Injectable } from '@nitrostack/core';
-import { SocialService } from './social.service.js';
+import { SocialService, globalSocialService } from './social.service.js';
 
 @Injectable()
 @Controller('social')
@@ -16,7 +16,7 @@ export class SocialController {
   })
   async facebookPost(input: any, ctx: ExecutionContext) {
     try {
-      const result = await this.socialService.postToFacebook(input.message, input.link);
+      const result = await globalSocialService.postToFacebook(input.message, input.link);
       return { success: true, result };
     } catch (error: any) {
       ctx.logger.error('Facebook post failed: ' + error.message);
@@ -31,7 +31,7 @@ export class SocialController {
   })
   async facebookAnalytics(input: any, ctx: ExecutionContext) {
     try {
-      const result = await this.socialService.getFacebookAnalytics();
+      const result = await globalSocialService.getFacebookAnalytics();
       return { success: true, data: result };
     } catch (error: any) {
       ctx.logger.error('Facebook analytics failed: ' + error.message);
@@ -49,7 +49,7 @@ export class SocialController {
   })
   async instagramPost(input: any, ctx: ExecutionContext) {
     try {
-      const result = await this.socialService.postToInstagram(input.image_url, input.caption);
+      const result = await globalSocialService.postToInstagram(input.image_url, input.caption);
       return { success: true, result };
     } catch (error: any) {
       ctx.logger.error('Instagram post failed: ' + error.message);
@@ -64,7 +64,7 @@ export class SocialController {
   })
   async instagramAnalytics(input: any, ctx: ExecutionContext) {
     try {
-      const result = await this.socialService.getInstagramAnalytics();
+      const result = await globalSocialService.getInstagramAnalytics();
       return { success: true, data: result };
     } catch (error: any) {
       ctx.logger.error('Instagram analytics failed: ' + error.message);
@@ -81,7 +81,7 @@ export class SocialController {
   })
   async linkedinPost(input: any, ctx: ExecutionContext) {
     try {
-      const result = await this.socialService.postToLinkedIn(input.text);
+      const result = await globalSocialService.postToLinkedIn(input.text);
       return { success: true, result };
     } catch (error: any) {
       ctx.logger.error('LinkedIn post failed: ' + error.message);
@@ -96,7 +96,7 @@ export class SocialController {
   })
   async linkedinAnalytics(input: any, ctx: ExecutionContext) {
     try {
-      const result = await this.socialService.getLinkedInAnalytics();
+      const result = await globalSocialService.getLinkedInAnalytics();
       return { success: true, data: result };
     } catch (error: any) {
       ctx.logger.error('LinkedIn analytics failed: ' + error.message);
@@ -109,8 +109,7 @@ export class SocialController {
     description: 'Lists all available social media posts from integrated platforms.',
     inputSchema: z.object({})
   })
-  @Widget('post-selector')
-  async listPosts() {
+  async listPosts(input: any, ctx: ExecutionContext) {
     const posts: any[] = [];
     const { FB_PAGE_ID, IG_USER_ID, FB_API_VERSION, PAGE_ACCESS_TOKEN } = process.env;
 
@@ -130,7 +129,7 @@ export class SocialController {
           });
         }
       } catch (e) {
-        console.error('Failed to fetch FB posts', e);
+        ctx.logger.error('Failed to fetch FB posts: ' + (e as Error).message);
       }
     }
 
@@ -150,14 +149,10 @@ export class SocialController {
           });
         }
       } catch (e) {
-        console.error('Failed to fetch IG posts', e);
+        ctx.logger.error('Failed to fetch IG posts: ' + (e as Error).message);
       }
     }
 
-    return {
-      widgetProps: {
-        posts
-      }
-    };
+    return { posts };
   }
 }

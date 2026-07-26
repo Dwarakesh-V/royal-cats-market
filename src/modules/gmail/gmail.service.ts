@@ -84,3 +84,6 @@ export class GmailService {
     return messages.sort((a, b) => (b.date?.getTime() || 0) - (a.date?.getTime() || 0));
   }
 }
+
+export const globalGmailService = new GmailService();
+

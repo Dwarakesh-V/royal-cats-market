@@ -1,5 +1,5 @@
 import { ControllerDecorator as Controller, ToolDecorator as Tool, ExecutionContext, z, Injectable } from '@nitrostack/core';
-import { GmailService } from './gmail.service.js';
+import { GmailService, globalGmailService } from './gmail.service.js';
 
 @Injectable()
 @Controller('gmail')
@@ -18,7 +18,7 @@ export class GmailController {
   })
   async sendEmail(input: any, ctx: ExecutionContext) {
     try {
-      const result = await this.gmailService.sendEmail(input.to, input.subject, input.text, input.html);
+      const result = await globalGmailService.sendEmail(input.to, input.subject, input.text, input.html);
       return { success: true, messageId: result.messageId };
     } catch (error: any) {
       ctx.logger.error('Failed to send email: ' + error.message);
@@ -37,7 +37,7 @@ export class GmailController {
   async readInbox(input: any, ctx: ExecutionContext) {
     try {
       const limit = Math.min(input.limit || 5, 10);
-      const messages = await this.gmailService.readLimitedInbox(input.sender_email, limit);
+      const messages = await globalGmailService.readLimitedInbox(input.sender_email, limit);
       return { success: true, messages };
     } catch (error: any) {
       ctx.logger.error('Failed to read inbox: ' + error.message);
