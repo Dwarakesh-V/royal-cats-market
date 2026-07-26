@@ -58,14 +58,6 @@ You need a **Google Cloud Console** project with the **Google Drive API** enable
    - **Connection Type**: `HTTP / SSE`
    - **URL**: `http://localhost:3000/sse`
 
-## Production Deployment (NitroCloud)
-
-When deploying this MCP server to [NitroCloud](https://nitrostack.ai/cloud), keep in mind:
-
-1. **Environment Variables**: Your `.env` file is ignored by Git and will not be uploaded. You must manually add `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`, and `GOOGLE_OAUTH_REDIRECT_URI` directly in the NitroCloud dashboard under the Environment/Secrets settings.
-2. **Restart Required**: After adding or modifying environment variables in the cloud dashboard, you must completely **Redeploy** or **Restart** the cloud instance for the node process to pick up the changes.
-3. **Google Console Updates**: Don't forget to add your live NitroCloud redirect URI (e.g., `https://.../auth/callback`) to your Google Cloud Console's *Authorized redirect URIs*!
-
 ## Application Architecture
 
 - `src/app.module.ts`: Core MCP app definition and module injection.
