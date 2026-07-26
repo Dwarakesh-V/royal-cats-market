@@ -34,7 +34,7 @@ function getTruePort(): number {
     level: 'info'
   },
   transport: {
-    type: process.env.NODE_ENV === 'production' ? 'dual' : 'stdio',
+    type: process.env.NODE_ENV === 'production' ? 'http' : 'stdio',
     http: {
       port: getTruePort(),
       host: '0.0.0.0'
