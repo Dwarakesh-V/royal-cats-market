@@ -4,12 +4,12 @@ import { Injectable } from '@nitrostack/core';
 @Injectable()
 export class SocialService {
   private fbBaseUrl = (process.env.FB_BASE_URL || 'https://graph.facebook.com/v21.0').trim();
-  private fbPageAccessToken = (process.env.FB_PAGE_ACCESS_TOKEN || '').replace(/['"]+/g, '').trim();
+  private fbPageAccessToken = (process.env.PAGE_ACCESS_TOKEN || process.env.FB_PAGE_ACCESS_TOKEN || '').replace(/['"]+/g, '').trim();
   private fbPageId = (process.env.FB_PAGE_ID || '').replace(/['"]+/g, '').trim();
   private igUserId = (process.env.IG_USER_ID || '').replace(/['"]+/g, '').trim();
 
-  private linkedInAccessToken = (process.env.LINKEDIN_ACCESS_TOKEN || '').replace(/['"]+/g, '').trim();
-  private linkedInUrnString = (process.env.LINKEDIN_URN_STRING || '').replace(/['"]+/g, '').trim();
+  private linkedInAccessToken = (process.env.LI_ACCESS_TOKEN || process.env.LINKEDIN_ACCESS_TOKEN || '').replace(/['"]+/g, '').trim();
+  private linkedInUrnString = (process.env.LI_URN || process.env.LINKEDIN_URN_STRING || '').replace(/['"]+/g, '').trim();
 
   // Facebook
   async postToFacebook(message: string, link?: string) {

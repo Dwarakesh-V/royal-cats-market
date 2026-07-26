@@ -1,10 +1,10 @@
-import { ControllerDecorator as Controller, ToolDecorator as Tool, ExecutionContext, z, Injectable } from '@nitrostack/core';
-import { SocialService, globalSocialService } from './social.service.js';
+import { ControllerDecorator as Controller, ToolDecorator as Tool, Widget, ExecutionContext, z, Injectable } from '@nitrostack/core';
+import { SocialService } from './social.service.js';
 
 @Injectable()
 @Controller('social')
 export class SocialController {
-  constructor(private readonly socialService: SocialService) {}
+  constructor(private readonly socialService: SocialService) { }
 
   @Tool({
     name: 'facebook_post',
@@ -124,6 +124,8 @@ export class SocialController {
               id: p.id,
               title: p.message ? p.message.slice(0, 30) + '...' : 'Facebook Post',
               date: p.created_time.split('T')[0],
+              likes: p.likes?.summary?.total_count || 0,
+              comments: p.comments?.summary?.total_count || 0,
               platforms: ['Facebook']
             });
           });
@@ -135,7 +137,7 @@ export class SocialController {
 
     if (IG_USER_ID && PAGE_ACCESS_TOKEN) {
       try {
-        const url = `https://graph.facebook.com/${FB_API_VERSION || 'v21.0'}/${IG_USER_ID}/media?fields=id,caption,timestamp&access_token=${PAGE_ACCESS_TOKEN}`;
+        const url = `https://graph.facebook.com/${FB_API_VERSION || 'v21.0'}/${IG_USER_ID}/media?fields=id,caption,timestamp,like_count,comments_count&access_token=${PAGE_ACCESS_TOKEN}`;
         const res = await fetch(url);
         const data = await res.json() as any;
         if (data.data) {
@@ -144,6 +146,8 @@ export class SocialController {
               id: p.id,
               title: p.caption ? p.caption.slice(0, 30) + '...' : 'Instagram Post',
               date: p.timestamp.split('T')[0],
+              likes: p.like_count || 0,
+              comments: p.comments_count || 0,
               platforms: ['Instagram']
             });
           });
