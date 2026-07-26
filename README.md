@@ -51,7 +51,6 @@ You need a **Google Cloud Console** project with the **Google Drive API** enable
    ```bash
    npm start
    ```
-   *Note: If you make changes to your `.env` file, you must fully restart this terminal process (Ctrl+C) for the changes to take effect.*
 
 4. **Connect NitroStudio**
    To test the tools locally using [NitroStudio](https://nitrostack.ai/studio), add a new server connection:
