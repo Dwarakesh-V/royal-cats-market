@@ -18,6 +18,13 @@ import { SystemHealthCheck } from './health/system.health.js';
   },
   logging: {
     level: 'info'
+  },
+  transport: {
+    type: process.env.NODE_ENV === 'production' ? 'dual' : 'stdio',
+    http: {
+      port: process.env.PORT ? parseInt(process.env.PORT, 10) : 3000,
+      host: '0.0.0.0'
+    }
   }
 })
 @Module({
