@@ -84,6 +84,13 @@ async function bootstrap() {
 
   // Start the server after configuring all routes
   await server.start();
+
+  // Configure keepAliveTimeout to prevent socket hangup errors behind cloud load balancers
+  if (httpTransport && (httpTransport as any).server) {
+    const httpServer = (httpTransport as any).server;
+    httpServer.keepAliveTimeout = 65000; // 65 seconds
+    httpServer.headersTimeout = 66000; // 66 seconds
+  }
 }
 
 // Start the application
