@@ -21,7 +21,20 @@ export class SocialService {
     const res = await fetch(url.toString(), { method: 'POST' });
     const data: any = await res.json();
     if (!res.ok) throw new Error(`Facebook post failed: ${JSON.stringify(data)}`);
-    return data;
+    
+    let postAnalytics = null;
+    try {
+      if (data.id) {
+        const statsUrl = `https://graph.facebook.com/v21.0/${data.id}?fields=id,message,likes.summary(true),comments.summary(true),shares,insights.metric(post_impressions,post_engagements)&access_token=${this.fbPageAccessToken}`;
+        const statsRes = await fetch(statsUrl);
+        const statsData = await statsRes.json();
+        postAnalytics = statsData.error ? { fallback: true, error: statsData.error.message } : statsData;
+      }
+    } catch (e: any) {
+      postAnalytics = { fallback: true, error: e.message };
+    }
+
+    return { ...data, post_analytics: postAnalytics };
   }
 
   async getFacebookAnalytics() {
@@ -70,6 +83,9 @@ export class SocialService {
     if (!createRes.ok) throw new Error(`Instagram media creation failed: ${JSON.stringify(createData)}`);
     const creationId = createData.id;
 
+    // Add a short delay to allow Instagram to process the image before publishing
+    await new Promise(resolve => setTimeout(resolve, 3000));
+
     const publishUrl = new URL(`${this.fbBaseUrl}/${this.igUserId}/media_publish`);
     publishUrl.searchParams.append('access_token', this.fbPageAccessToken);
     publishUrl.searchParams.append('creation_id', creationId);
@@ -77,12 +93,25 @@ export class SocialService {
     const publishRes = await fetch(publishUrl.toString(), { method: 'POST' });
     const publishData: any = await publishRes.json();
     if (!publishRes.ok) throw new Error(`Instagram media publish failed: ${JSON.stringify(publishData)}`);
-    return publishData;
+    
+    let postAnalytics = null;
+    try {
+      if (publishData.id) {
+        const statsUrl = `https://graph.facebook.com/v21.0/${publishData.id}/insights?metric=reach,saved,likes,comments,shares,total_interactions&access_token=${this.fbPageAccessToken}`;
+        const statsRes = await fetch(statsUrl);
+        const statsData = await statsRes.json();
+        postAnalytics = statsData.error ? { fallback: true, error: statsData.error.message } : statsData;
+      }
+    } catch (e: any) {
+      postAnalytics = { fallback: true, error: e.message };
+    }
+
+    return { ...publishData, post_analytics: postAnalytics };
   }
 
   async getInstagramAnalytics() {
     const url = new URL(`${this.fbBaseUrl}/${this.igUserId}/insights`);
-    url.searchParams.append('metric', 'impressions,reach');
+    url.searchParams.append('metric', 'reach,follower_count'); // profile_views removed due to metric_type requirement
     url.searchParams.append('period', 'day');
     url.searchParams.append('access_token', this.fbPageAccessToken);
 
@@ -121,7 +150,23 @@ export class SocialService {
 
     if (res.status === 201) {
        const id = res.headers.get('x-restli-id');
-       return { success: true, id };
+       let postAnalytics = null;
+       if (id) {
+         try {
+           const statsUrl = `https://api.linkedin.com/v2/socialActions/${encodeURIComponent(id)}`;
+           const statsRes = await fetch(statsUrl, {
+             headers: { 
+               'Authorization': `Bearer ${this.linkedInAccessToken}`, 
+               'X-Restli-Protocol-Version': '2.0.0' 
+             }
+           });
+           const statsData = await statsRes.json();
+           postAnalytics = statsData.error || statsData.status >= 400 ? { fallback: true, error: statsData.message || 'API Error' } : statsData;
+         } catch (e: any) {
+           postAnalytics = { fallback: true, error: e.message };
+         }
+       }
+       return { success: true, id, post_analytics: postAnalytics };
     }
 
     const data = await res.text();
