@@ -33,5 +33,6 @@
   "author": "Royal Cats",
   "nitrostack": {
     "skillsVersion": "1.0.0"
-  }
+  },
+  "main": "dist/index.js"
 }
