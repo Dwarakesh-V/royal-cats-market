@@ -1,4 +1,4 @@
-import { ControllerDecorator as Controller, ToolDecorator as Tool, ExecutionContext, z, Injectable } from '@nitrostack/core';
+import { ControllerDecorator as Controller, ToolDecorator as Tool, Widget, ExecutionContext, z, Injectable } from '@nitrostack/core';
 import { SocialService } from './social.service.js';
 
 @Injectable()
