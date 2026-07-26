@@ -61,4 +61,53 @@ export class OauthController {
       return { error: 'Failed to read file contents.', details: error.message };
     }
   }
+
+  @Tool({
+    name: 'search_files',
+    description: 'Searches for files in the authenticated user\'s Google Drive using a search query.',
+    inputSchema: z.object({
+      query: z.string().describe('The Google Drive search query (e.g., "name contains \'report\'")')
+    })
+  })
+  async searchFiles(input: any, ctx: ExecutionContext) {
+    try {
+      if (!globalOauthService) {
+        throw new Error('OAuth service is not initialized');
+      }
+      const files = await globalOauthService.searchDriveFiles(input.query);
+      return { files };
+    } catch (error: any) {
+      ctx.logger.error('Failed to search files: ' + error.message);
+      return { error: 'Failed to search files.', details: error.message };
+    }
+  }
+
+  @Tool({
+    name: 'upload_file',
+    description: 'Uploads a file to Google Drive. Accepts base64 encoded content.',
+    inputSchema: z.object({
+      file_name: z.string().describe('Name of the uploaded file'),
+      file_type: z.string().describe('MIME type of the uploaded file'),
+      file_content: z.string().describe('Base64 encoded file content'),
+      folder_id: z.string().optional().describe('Optional parent folder ID to upload to. Defaults to root.')
+    })
+  })
+  async uploadFile(input: any, ctx: ExecutionContext) {
+    try {
+      if (!globalOauthService) {
+        throw new Error('OAuth service is not initialized');
+      }
+      const folderId = input.folder_id || 'root';
+      const result = await globalOauthService.uploadDriveFile(
+        input.file_name,
+        input.file_type,
+        input.file_content,
+        folderId
+      );
+      return { success: true, file: result };
+    } catch (error: any) {
+      ctx.logger.error('Failed to upload file: ' + error.message);
+      return { error: 'Failed to upload file.', details: error.message };
+    }
+  }
 }

@@ -53,6 +53,48 @@ export class OauthService {
     return res.data.files || [];
   }
 
+  async searchDriveFiles(query: string) {
+    const drive = this.getDriveClient();
+    const res = await drive.files.list({
+      q: `${query} and trashed = false`,
+      pageSize: 50,
+      fields: 'nextPageToken, files(id, name, mimeType)',
+    });
+    return res.data.files || [];
+  }
+
+  async uploadDriveFile(fileName: string, mimeType: string, base64Content: string, folderId: string = 'root') {
+    const drive = this.getDriveClient();
+    let buffer: Buffer;
+    
+    // Parse the data URI or raw base64
+    const matches = base64Content.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+    if (matches && matches.length === 3) {
+      buffer = Buffer.from(matches[2], 'base64');
+    } else {
+      buffer = Buffer.from(base64Content, 'base64');
+    }
+
+    const { Readable } = await import('stream');
+    const stream = new Readable();
+    stream.push(buffer);
+    stream.push(null);
+
+    const res = await drive.files.create({
+      requestBody: {
+        name: fileName,
+        parents: [folderId],
+      },
+      media: {
+        mimeType: mimeType,
+        body: stream,
+      },
+      fields: 'id, name, mimeType',
+    });
+
+    return res.data;
+  }
+
   async readFileContent(fileId: string) {
     const drive = this.getDriveClient();
     
