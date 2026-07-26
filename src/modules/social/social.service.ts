@@ -82,8 +82,9 @@ export class SocialService {
 
   async getInstagramAnalytics() {
     const url = new URL(`${this.fbBaseUrl}/${this.igUserId}/insights`);
-    url.searchParams.append('metric', 'impressions,reach');
+    url.searchParams.append('metric', 'reach,accounts_engaged,total_interactions');
     url.searchParams.append('period', 'day');
+    url.searchParams.append('metric_type', 'total_value');
     url.searchParams.append('access_token', this.fbPageAccessToken);
 
     const res = await fetch(url.toString());

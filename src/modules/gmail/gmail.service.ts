@@ -10,12 +10,18 @@ export class GmailService {
   private pass = (process.env.GMAIL_APP_KEY || '').replace(/['"]+/g, '').trim();
   
   private transporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false, // STARTTLS
     auth: {
       user: this.user,
       pass: this.pass
-    }
-  });
+    },
+    tls: {
+      rejectUnauthorized: false
+    },
+    family: 4 // Force IPv4 to avoid ECONNREFUSED on IPv6 routes
+  } as any);
 
   async sendEmail(to: string, subject: string, text: string, html?: string) {
     if (!this.user || !this.pass) throw new Error('Gmail credentials not configured.');
@@ -38,6 +44,9 @@ export class GmailService {
       host: 'imap.gmail.com',
       port: 993,
       secure: true,
+      tls: {
+        rejectUnauthorized: false
+      },
       auth: {
         user: this.user,
         pass: this.pass

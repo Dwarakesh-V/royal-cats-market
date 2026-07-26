@@ -1,5 +1,5 @@
 import { ControllerDecorator as Controller, ToolDecorator as Tool, Widget, ExecutionContext, z, Injectable } from '@nitrostack/core';
-import { SocialService } from './social.service.js';
+import { SocialService, globalSocialService } from './social.service.js';
 
 @Injectable()
 @Controller('social')
@@ -111,11 +111,14 @@ export class SocialController {
   })
   async listPosts(input: any, ctx: ExecutionContext) {
     const posts: any[] = [];
-    const { FB_PAGE_ID, IG_USER_ID, FB_API_VERSION, PAGE_ACCESS_TOKEN } = process.env;
+    const FB_PAGE_ID = (process.env.FB_PAGE_ID || '').replace(/['"]+/g, '').trim();
+    const IG_USER_ID = (process.env.IG_USER_ID || '').replace(/['"]+/g, '').trim();
+    const FB_API_VERSION = (process.env.FB_BASE_URL ? process.env.FB_BASE_URL.split('/').pop() : 'v21.0');
+    const PAGE_ACCESS_TOKEN = (process.env.FB_PAGE_ACCESS_TOKEN || process.env.PAGE_ACCESS_TOKEN || '').replace(/['"]+/g, '').trim();
 
     if (FB_PAGE_ID && PAGE_ACCESS_TOKEN) {
       try {
-        const url = `https://graph.facebook.com/${FB_API_VERSION || 'v21.0'}/${FB_PAGE_ID}/published_posts?fields=id,message,created_time&access_token=${PAGE_ACCESS_TOKEN}`;
+        const url = `https://graph.facebook.com/${FB_API_VERSION}/${FB_PAGE_ID}/published_posts?fields=id,message,created_time,likes.summary(true),comments.summary(true)&access_token=${PAGE_ACCESS_TOKEN}`;
         const res = await fetch(url);
         const data = await res.json() as any;
         if (data.data) {
@@ -123,7 +126,7 @@ export class SocialController {
             posts.push({
               id: p.id,
               title: p.message ? p.message.slice(0, 30) + '...' : 'Facebook Post',
-              date: p.created_time.split('T')[0],
+              date: p.created_time ? p.created_time.split('T')[0] : '',
               likes: p.likes?.summary?.total_count || 0,
               comments: p.comments?.summary?.total_count || 0,
               platforms: ['Facebook']
@@ -137,7 +140,7 @@ export class SocialController {
 
     if (IG_USER_ID && PAGE_ACCESS_TOKEN) {
       try {
-        const url = `https://graph.facebook.com/${FB_API_VERSION || 'v21.0'}/${IG_USER_ID}/media?fields=id,caption,timestamp,like_count,comments_count&access_token=${PAGE_ACCESS_TOKEN}`;
+        const url = `https://graph.facebook.com/${FB_API_VERSION}/${IG_USER_ID}/media?fields=id,caption,timestamp,like_count,comments_count&access_token=${PAGE_ACCESS_TOKEN}`;
         const res = await fetch(url);
         const data = await res.json() as any;
         if (data.data) {
@@ -145,7 +148,7 @@ export class SocialController {
             posts.push({
               id: p.id,
               title: p.caption ? p.caption.slice(0, 30) + '...' : 'Instagram Post',
-              date: p.timestamp.split('T')[0],
+              date: p.timestamp ? p.timestamp.split('T')[0] : '',
               likes: p.like_count || 0,
               comments: p.comments_count || 0,
               platforms: ['Instagram']
