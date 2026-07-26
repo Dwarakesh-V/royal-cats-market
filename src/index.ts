@@ -25,6 +25,15 @@ async function bootstrap() {
   const httpTransport = server.getHttpTransport();
   if (httpTransport && httpTransport.getApp) {
     const app = httpTransport.getApp();
+
+    // Add health check endpoints for Cloud Load Balancers
+    app.get('/', (req: any, res: any) => {
+      res.status(200).send('NitroStack MCP Server is running');
+    });
+    
+    app.get('/health', (req: any, res: any) => {
+      res.status(200).send({ status: 'ok', uptime: process.uptime() });
+    });
     app.get('/auth/callback', async (req: any, res: any) => {
       const code = req.query.code as string;
       if (!code) {
